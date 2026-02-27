@@ -24,5 +24,9 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
-export default app;
 
+//import the routes
+import healthCheckRouter from "./routes/healthcheck.routes.js";
+app.use("/api/v1/healthcheck", healthCheckRouter);
+
+export default app;
