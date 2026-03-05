@@ -375,6 +375,7 @@ export {
   refreshAccessToken,
   changeCurrentPassword,
   resetForgotPassword,
+  forgotPasswordRequest,
 };
 
 //http://localhost:3000/api/v1/users/verify-email/e7ee7b50c1d75aa23a55c968f62206c9433b654a
