@@ -1,2 +1,22 @@
+# dependencies
 node_modules/
-.env*".vscode/" 
+
+# env files
+.env
+.env.*
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# build folders
+dist/
+build/
+
+# editor
+.vscode/
+
+# OS junk (Windows)
+Thumbs.db
+desktop.ini
