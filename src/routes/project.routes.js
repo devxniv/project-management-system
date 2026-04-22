@@ -1,14 +1,14 @@
 import { Router } from "express";
 import {
   addMembersToProject,
-  deleteMember,
-  updateMemberRole,
-  getProjectMembers,
-  getProjectById,
-  deleteProject,
-  updateProject,
-  getProjects,
   createProject,
+  deleteMember,
+  getProjects,
+  getProjectById,
+  getProjectMembers,
+  updateProject,
+  deleteProject,
+  updateMemberRole,
 } from "../controllers/project.controllers.js";
 import { validate } from "../middlewares/validator.middleware.js";
 import {
@@ -23,7 +23,7 @@ import { AvailableUserRole, UserRolesEnum } from "../utils/constants.js";
 
 const router = Router();
 router.use(verifyJWT);
-//Method Chaining in Express to handle multiple HTTP verbs on the same URL path "/"
+
 router
   .route("/")
   .get(getProjects)
@@ -31,17 +31,15 @@ router
 
 router
   .route("/:projectId")
-  .get(validateProjectPermission(AvailableUserRole))
+  .get(validateProjectPermission(AvailableUserRole), getProjectById)
   .put(
-    createProjectValidator(),
-    validate,
+    validateProjectPermission([UserRolesEnum.ADMIN]),
     createProjectValidator(),
     validate,
     updateProject,
   )
   .delete(validateProjectPermission([UserRolesEnum.ADMIN]), deleteProject);
 
-//update or delete a member
 router
   .route("/:projectId/members")
   .get(getProjectMembers)
@@ -56,4 +54,5 @@ router
   .route("/:projectId/members/:userId")
   .put(validateProjectPermission([UserRolesEnum.ADMIN]), updateMemberRole)
   .delete(validateProjectPermission([UserRolesEnum.ADMIN]), deleteMember);
+
 export default router;

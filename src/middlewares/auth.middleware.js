@@ -2,6 +2,7 @@ import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import { ProjectMember } from "../models/projectmember.models.js";
 export const verifyJWT = asyncHandler(async (req, resizeBy, next) => {
   const token =
@@ -29,7 +30,7 @@ export const verifyJWT = asyncHandler(async (req, resizeBy, next) => {
 
 //Role-Based Access Control middleware
 export const validateProjectPermission = (roles = []) => {
-  asyncHandler(async (req, res, next) => {
+  return asyncHandler(async (req, res, next) => {
     const { projectId } = req.params;
 
     if (!projectId) {
