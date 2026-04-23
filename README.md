@@ -1,22 +1,24 @@
 # 📋 Project Management System
 
+🌐 Live API: https://your-render-url.onrender.com
+
 A RESTful backend API for managing projects, tasks, and team members — built with Node.js, Express, and MongoDB.
 
 ---
 
 ## 🚀 Tech Stack
 
-| Layer             | Technology                    |
-|-------------------|-------------------------------|
-| Runtime           | Node.js (ESM modules)         |
-| Framework         | Express v5                    |
-| Database          | MongoDB via Mongoose          |
-| Auth              | JWT (Access + Refresh tokens) |
-| Password Hashing  | bcrypt                        |
-| File Uploads      | Multer                        |
-| Email             | Nodemailer + Mailgen          |
-| Validation        | express-validator             |
-| Dev Server        | Nodemon + Prettier            |
+| Layer            | Technology                    |
+| ---------------- | ----------------------------- |
+| Runtime          | Node.js (ESM modules)         |
+| Framework        | Express v5                    |
+| Database         | MongoDB via Mongoose          |
+| Auth             | JWT (Access + Refresh tokens) |
+| Password Hashing | bcrypt                        |
+| File Uploads     | Multer                        |
+| Email            | Nodemailer + Mailgen          |
+| Validation       | express-validator             |
+| Dev Server       | Nodemon + Prettier            |
 
 ---
 
@@ -126,24 +128,24 @@ All routes are prefixed with `/api/v1`.
 
 ### Auth — `/api/v1/auth`
 
-| Method | Endpoint                      | Auth Required  | Description                   |
-|--------|-------------------------------|----------------|-------------------------------|
-| POST   | `/register`                   | ✗             | Register a new user            |
-| POST   | `/login`                      | ✗             | Login and receive tokens       |
-| GET    | `/verify-email/:token`        | ✗             | Verify email address           |
-| POST   | `/refresh-token`              | ✗             | Get a new access token         |
-| POST   | `/forgot-password`            | ✗             | Request a password reset email |
-| POST   | `/reset-password/:token`      | ✗             | Reset password using token     |
-| POST   | `/logout`                     | ✓             | Get logged-in user info        |
-| POST   | `/change-password`            | ✓             | Change current password        |
-| POST   | `/resend-email-verification`  | ✓             | Resend verification email      |
+| Method | Endpoint                     | Auth Required | Description                    |
+| ------ | ---------------------------- | ------------- | ------------------------------ |
+| POST   | `/register`                  | ✗             | Register a new user            |
+| POST   | `/login`                     | ✗             | Login and receive tokens       |
+| GET    | `/verify-email/:token`       | ✗             | Verify email address           |
+| POST   | `/refresh-token`             | ✗             | Get a new access token         |
+| POST   | `/forgot-password`           | ✗             | Request a password reset email |
+| POST   | `/reset-password/:token`     | ✗             | Reset password using token     |
+| POST   | `/logout`                    | ✓             | Get logged-in user info        |
+| POST   | `/change-password`           | ✓             | Change current password        |
+| POST   | `/resend-email-verification` | ✓             | Resend verification email      |
 
 ### Projects — `/api/v1/projects`
 
 All project routes require authentication (`verifyJWT`).
 
 | Method | Endpoint                      | Role Required | Description                            |
-|--------|-------------------------------|---------------|----------------------------------------|
+| ------ | ----------------------------- | ------------- | -------------------------------------- |
 | GET    | `/`                           | Member        | List all projects for the current user |
 | POST   | `/`                           | —             | Create a new project                   |
 | GET    | `/:projectId`                 | Member        | Get a project by ID                    |
@@ -157,7 +159,7 @@ All project routes require authentication (`verifyJWT`).
 ### Tasks — `/api/v1/tasks`
 
 | Method | Endpoint              | Description                 |
-|--------|-----------------------|-----------------------------|
+| ------ | --------------------- | --------------------------- |
 | GET    | `/project/:projectId` | Get all tasks for a project |
 | POST   | `/project/:projectId` | Create a task               |
 | GET    | `/:taskId`            | Get a task by ID            |
@@ -167,7 +169,7 @@ All project routes require authentication (`verifyJWT`).
 ### Health Check
 
 | Method | Endpoint              | Description        |
-|--------|-----------------------|--------------------|
+| ------ | --------------------- | ------------------ |
 | GET    | `/api/v1/healthcheck` | Returns API status |
 
 ---
@@ -186,10 +188,10 @@ All project routes require authentication (`verifyJWT`).
 
 Each project has members with one of two roles:
 
-| Role    | Permissions                                                      |
-|---------|------------------------------------------------------------------|
-| `admin` | Full access: update/delete project, manage members, create tasks |
-| `member`| Read access: view project, view tasks                            |
+| Role     | Permissions                                                      |
+| -------- | ---------------------------------------------------------------- |
+| `admin`  | Full access: update/delete project, manage members, create tasks |
+| `member` | Read access: view project, view tasks                            |
 
 The `validateProjectPermission` middleware checks the user's role in `ProjectMember` before allowing the action.
 
