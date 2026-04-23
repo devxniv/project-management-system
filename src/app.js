@@ -35,7 +35,7 @@ app.get("/", (req, res) => {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Basecamp API</title>
+  <title>API</title>
   <style>
     body { font-family: sans-serif; max-width: 640px; margin: 60px auto; padding: 0 20px; color: #111; }
     .badge { display: inline-block; font-size: 11px; padding: 2px 10px; border-radius: 20px; background: #d1fae5; color: #065f46; }
@@ -51,7 +51,7 @@ app.get("/", (req, res) => {
   </style>
 </head>
 <body>
-  <h1>Basecamp API <span class="badge">running</span></h1>
+  <h1>API <span class="badge">running</span></h1>
   <div class="meta">
     <span>Version: <strong>v1</strong></span>
     <span>Status: <strong>200 OK</strong></span>
@@ -68,7 +68,7 @@ app.get("/", (req, res) => {
 
   <div class="card">
     <h2>Raw JSON</h2>
-    <pre>${JSON.stringify({ success: true, message: "Basecamp API is running", version: "v1", docs: "/api/v1/healthcheck", endpoints: { auth: "/api/v1/auth", projects: "/api/v1/projects", tasks: "/api/v1/tasks" } }, null, 2)}</pre>
+    <pre>${JSON.stringify({ success: true, message: "API is running", version: "v1", docs: "/api/v1/healthcheck", endpoints: { auth: "/api/v1/auth", projects: "/api/v1/projects", tasks: "/api/v1/tasks" } }, null, 2)}</pre>
   </div>
 </body>
 </html>`);
