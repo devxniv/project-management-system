@@ -2,6 +2,17 @@
 
 🌐 Live API: https://project-management-system-ba6l.onrender.com
 
+##  Branches
+
+| Branch | Description |
+|--------|-------------|
+| `main` | Original backend API (tutorial-guided) |
+| `independent-build` | Full-stack rebuild from scratch — backend + frontend, built independently |
+
+> The `independent-build` branch is actively under development.
+
+---
+
 A RESTful backend API for managing projects, tasks, and team members — built with Node.js, Express, and MongoDB.
 
 ---
