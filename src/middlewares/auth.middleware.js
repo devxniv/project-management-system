@@ -19,12 +19,12 @@ export const verifyJWT = asyncHandler(async (req, resizeBy, next) => {
       "-password -refreshToken -emailVerificationToken -emailVerificationExpiry",
     );
     if (!user) {
-      throw new ApiError(401, "Invallid access token");
+      throw new ApiError(401, "Invalid access token");
     }
     req.user = user;
     next();
   } catch (error) {
-    throw new ApiError(401, "Invallid access token");
+    throw new ApiError(401, "Invalid access token");
   }
 });
 

@@ -2,6 +2,7 @@ import { User } from "../models/user.models.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import crypto from "crypto";
 import {
   emailVerificationMailgenContent,
   forgotPasswordMailgenContent,
@@ -26,7 +27,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
   }
 };
 const registerUser = asyncHandler(async (req, res) => {
-  const { email, username, password, role } = req.body;
+  const { email, username, password } = req.body;
 
   const existingUser = await User.findOne({
     $or: [{ username }, { email }],
@@ -315,7 +316,7 @@ const resetForgotPassword = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    throw new ApiError(489, "Token is invalid or expired");
+    throw new ApiError(400, "Token is invalid or expired");
   }
   user.forgotPasswordExpiry = undefined;
   user.forgotPasswordToken = undefined;
@@ -332,13 +333,14 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const user = await User.findById(req.user?._id);
 
-  const isPasswordValid = await User.isPasswordCorrect(oldPassword);
+  const isPasswordValid = await user.isPasswordCorrect(oldPassword);
 
   if (!isPasswordValid) {
     throw new ApiError(400, "Invalid old password");
   }
 
   user.password = newPassword;
+  user.refreshToken = "";
   await user.save({ validateBeforeSave: false });
 
   return res

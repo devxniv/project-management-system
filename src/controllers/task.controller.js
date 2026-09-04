@@ -94,7 +94,7 @@ const getTaskById = asyncHandler(async (req, res) => {
   ]);
 
   if (!task || task.length === 0) {
-    throw new ApiError(200, task(404, "Tsk not found"));
+    throw new ApiError(200, task(404, "Task not found"));
   }
 
   return res
