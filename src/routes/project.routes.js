@@ -9,17 +9,19 @@ import {
   updateProject,
   deleteProject,
   updateMemberRole,
-} from "../controllers/project.controllers.js";
+} from "../controllers/project.controller.js";
 import { validate } from "../middlewares/validator.middleware.js";
 import {
   createProjectValidator,
   addMembertoProjectValidator,
+  updateMemberRoleValidator,
+  memberIdParamValidator,
 } from "../validators/index.js";
 import {
   verifyJWT,
   validateProjectPermission,
 } from "../middlewares/auth.middleware.js";
-import { AvailableUserRole, UserRolesEnum } from "../utils/constants.js";
+import { UserRolesEnum } from "../utils/constants.js";
 
 const router = Router();
 router.use(verifyJWT);
@@ -31,7 +33,7 @@ router
 
 router
   .route("/:projectId")
-  .get(validateProjectPermission(AvailableUserRole), getProjectById)
+  .get(validateProjectPermission(), getProjectById) // any member
   .put(
     validateProjectPermission([UserRolesEnum.ADMIN]),
     createProjectValidator(),
@@ -42,7 +44,7 @@ router
 
 router
   .route("/:projectId/members")
-  .get(getProjectMembers)
+  .get(validateProjectPermission(), getProjectMembers) // any member
   .post(
     validateProjectPermission([UserRolesEnum.ADMIN]),
     addMembertoProjectValidator(),
@@ -52,7 +54,17 @@ router
 
 router
   .route("/:projectId/members/:userId")
-  .put(validateProjectPermission([UserRolesEnum.ADMIN]), updateMemberRole)
-  .delete(validateProjectPermission([UserRolesEnum.ADMIN]), deleteMember);
+  .put(
+    validateProjectPermission([UserRolesEnum.ADMIN]),
+    updateMemberRoleValidator(),
+    validate,
+    updateMemberRole,
+  )
+  .delete(
+    validateProjectPermission([UserRolesEnum.ADMIN]),
+    memberIdParamValidator(),
+    validate,
+    deleteMember,
+  );
 
 export default router;

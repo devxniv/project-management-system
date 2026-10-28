@@ -1,14 +1,15 @@
 import { Router } from "express";
 import {
-  login,
-  refreshAccessToken,
   registerUser,
-  verifyEmail,
-  forgotPasswordRequest,
-  resetForgotPassword,
+  login,
+  logoutUser,
   getCurrentUser,
-  changeCurrentPassword,
+  verifyEmail,
   resendEmailVerification,
+  refreshAccessToken,
+  changeCurrentPassword,
+  resetForgotPassword,
+  forgotPasswordRequest,
 } from "../controllers/authUser.controller.js";
 import { validate } from "../middlewares/validator.middleware.js";
 import {
@@ -16,35 +17,53 @@ import {
   userLoginValidator,
   userForgotPasswordValidator,
   userResetForgotPasswordValidator,
-  userChnageCurrentPasswordValidator,
+  userChangeCurrentPasswordValidator,
 } from "../validators/index.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { logoutUser } from "../controllers/authUser.controller.js";
+import {
+  loginLimiter,
+  registerLimiter,
+  forgotPasswordLimiter,
+  resendVerificationLimiter,
+  refreshTokenLimiter,
+} from "../middlewares/rateLimiter.middleware.js";
+
 const router = Router();
 
-//unsecured routes which doesn't require jwt authentication
-router.route("/register").post(userRegisterValidator(), validate, registerUser);
-router.route("/login").post(userLoginValidator(), login);
+// public routes (no JWT required)
+router
+  .route("/register")
+  .post(registerLimiter, userRegisterValidator(), validate, registerUser);
+router
+  .route("/login")
+  .post(loginLimiter, userLoginValidator(), validate, login);
 router.route("/verify-email/:verificationToken").get(verifyEmail);
-router.route("/refresh-token").post(refreshAccessToken);
+router.route("/refresh-token").post(refreshTokenLimiter, refreshAccessToken);
 router
   .route("/forgot-password")
-  .post(userForgotPasswordValidator(), validate, forgotPasswordRequest);
+  .post(
+    forgotPasswordLimiter,
+    userForgotPasswordValidator(),
+    validate,
+    forgotPasswordRequest,
+  );
 router
   .route("/reset-password/:resetToken")
   .post(userResetForgotPasswordValidator(), validate, resetForgotPassword);
-//secure routes
+
+// secured routes
 router.route("/logout").post(verifyJWT, logoutUser);
-router.route("/current-user").post(verifyJWT, getCurrentUser);
+router.route("/current-user").get(verifyJWT, getCurrentUser);
 router
   .route("/change-password")
   .post(
     verifyJWT,
-    userChnageCurrentPasswordValidator(),
+    userChangeCurrentPasswordValidator(),
     validate,
     changeCurrentPassword,
   );
 router
   .route("/resend-email-verification")
-  .post(verifyJWT, resendEmailVerification);
+  .post(verifyJWT, resendVerificationLimiter, resendEmailVerification);
+
 export default router;

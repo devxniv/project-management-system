@@ -4,82 +4,108 @@ import {
   getTaskById,
   createTask,
   updateTask,
+  updateTaskStatus,
   deleteTask,
   createSubTask,
   updateSubTask,
   deleteSubTask,
 } from "../controllers/task.controller.js";
+import { validate } from "../middlewares/validator.middleware.js";
 import {
   verifyJWT,
   validateProjectPermission,
 } from "../middlewares/auth.middleware.js";
+import {
+  createTaskValidator,
+  updateTaskValidator,
+  taskStatusValidator,
+  taskIdValidator,
+  createSubTaskValidator,
+  updateSubTaskValidator,
+  subTaskIdValidator,
+} from "../validators/index.js";
 import { UserRolesEnum } from "../utils/constants.js";
-
+import { upload } from "../middlewares/multer.middleware.js";
 const router = Router();
+router.use(verifyJWT);
 
-const { ADMIN, PROJECT_ADMIN, MEMBER } = UserRolesEnum;
+const { ADMIN, PROJECT_ADMIN } = UserRolesEnum;
+const managers = [ADMIN, PROJECT_ADMIN];
 
-// List project tasks — all roles can view
-router.get(
-  "/:projectId",
-  verifyJWT,
-  validateProjectPermission([ADMIN, PROJECT_ADMIN, MEMBER]),
-  getTasks,
-);
+// List tasks (any member). Optional query: ?status=&assignedTo=<id|me>&page=&limit=
+router.get("/:projectId", validateProjectPermission(), getTasks);
 
-// Create task — Admin and Project Admin only
+// Create task (admin, project admin)
 router.post(
   "/:projectId",
-  verifyJWT,
-  validateProjectPermission([ADMIN, PROJECT_ADMIN]),
+  validateProjectPermission(managers),
+  upload.array("attachments", 5),
+  createTaskValidator(),
+  validate,
   createTask,
 );
 
-// Get task details — all roles can view
+// Task details with subtasks (any member)
 router.get(
   "/:projectId/t/:taskId",
-  verifyJWT,
-  validateProjectPermission([ADMIN, PROJECT_ADMIN, MEMBER]),
+  validateProjectPermission(),
+  taskIdValidator(),
+  validate,
   getTaskById,
 );
 
-// Update task — Admin and Project Admin only
+// Update task (admin, project admin)
 router.put(
   "/:projectId/t/:taskId",
-  verifyJWT,
-  validateProjectPermission([ADMIN, PROJECT_ADMIN]),
+  validateProjectPermission(managers),
+  upload.array("attachments", 5),
+  updateTaskValidator(),
+  validate,
   updateTask,
 );
 
-// Delete task — Admin and Project Admin only
+// Change status (any member; the controller limits it to the assignee or a manager)
+router.patch(
+  "/:projectId/t/:taskId/status",
+  validateProjectPermission(),
+  taskStatusValidator(),
+  validate,
+  updateTaskStatus,
+);
+
+// Delete task (admin, project admin)
 router.delete(
   "/:projectId/t/:taskId",
-  verifyJWT,
-  validateProjectPermission([ADMIN, PROJECT_ADMIN]),
+  validateProjectPermission(managers),
+  taskIdValidator(),
+  validate,
   deleteTask,
 );
 
-// Create subtask — Admin and Project Admin only
+// Create subtask (admin, project admin)
 router.post(
   "/:projectId/t/:taskId/subtasks",
-  verifyJWT,
-  validateProjectPermission([ADMIN, PROJECT_ADMIN]),
+  validateProjectPermission(managers),
+  createSubTaskValidator(),
+  validate,
   createSubTask,
 );
 
-// Update subtask — all roles can update
+// Update subtask (any member; the controller limits members to ticking their own tasks)
 router.put(
   "/:projectId/st/:subTaskId",
-  verifyJWT,
-  validateProjectPermission([ADMIN, PROJECT_ADMIN, MEMBER]),
+  validateProjectPermission(),
+  updateSubTaskValidator(),
+  validate,
   updateSubTask,
 );
 
-// Delete subtask — Admin and Project Admin only
+// Delete subtask (admin, project admin)
 router.delete(
   "/:projectId/st/:subTaskId",
-  verifyJWT,
-  validateProjectPermission([ADMIN, PROJECT_ADMIN]),
+  validateProjectPermission(managers),
+  subTaskIdValidator(),
+  validate,
   deleteSubTask,
 );
 

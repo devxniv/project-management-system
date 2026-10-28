@@ -2,18 +2,32 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-// Route imports — kept at top with other imports (ESM best practice)
 import healthCheckRouter from "./routes/healthcheck.routes.js";
 import authRouter from "./routes/auth.routes.js";
 import projectRouter from "./routes/project.routes.js";
 import taskRouter from "./routes/task.routes.js";
+import {
+  notFoundHandler,
+  errorHandler,
+} from "./middlewares/error.middleware.js";
+import { apiLimiter } from "./middlewares/rateLimiter.middleware.js";
+
+// Needed on Render/Railway/Heroku so rate limiting and secure cookies work behind a proxy
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
+// 1. CORS — first, so preflight OPTIONS requests are handled
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 const app = express();
 
-// 1. CORS — must come first to handle preflight OPTIONS requests
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN?.split(",") || "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -75,8 +89,13 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/healthcheck", healthCheckRouter);
+app.use("/api/v1", apiLimiter);
+
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/projects", projectRouter);
 app.use("/api/v1/tasks", taskRouter);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export default app;

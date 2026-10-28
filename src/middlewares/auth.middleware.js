@@ -4,60 +4,61 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { ProjectMember } from "../models/projectmember.models.js";
-export const verifyJWT = asyncHandler(async (req, resizeBy, next) => {
-  const token =
-    req.cookies?.accessToken ||
-    req.header("Authorization")?.replace("Bearer ", "");
 
-  if (!token) {
-    throw new ApiError(401, "unauthorized request");
-  }
+const getAccessToken = (req) => {
+  const cookieToken = req.cookies?.accessToken;
+  if (typeof cookieToken === "string" && cookieToken) return cookieToken;
 
+  const header = req.header("Authorization");
+  if (header?.startsWith("Bearer ")) return header.slice(7).trim();
+
+  return null;
+};
+
+export const verifyJWT = asyncHandler(async (req, res, next) => {
+  const token = getAccessToken(req);
+  if (!token) throw new ApiError(401, "unauthorized request");
+
+  let decoded;
   try {
-    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const user = await User.findById(decodedToken?._id).select(
-      "-password -refreshToken -emailVerificationToken -emailVerificationExpiry",
-    );
-    if (!user) {
-      throw new ApiError(401, "Invalid access token");
-    }
-    req.user = user;
-    next();
-  } catch (error) {
-    throw new ApiError(401, "Invalid access token");
+    decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+  } catch {
+    throw new ApiError(401, "Invalid or expired access token");
   }
+
+  const user = await User.findById(decoded?._id).select(
+    "-password -refreshToken -emailVerificationToken -emailVerificationExpiry -forgotPasswordToken -forgotPasswordExpiry",
+  );
+  if (!user) throw new ApiError(401, "Invalid access token");
+
+  req.user = user;
+  next();
 });
 
-//Role-Based Access Control middleware
-export const validateProjectPermission = (roles = []) => {
-  return asyncHandler(async (req, res, next) => {
+// Role-Based Access Control middleware
+export const validateProjectPermission = (roles = []) =>
+  asyncHandler(async (req, res, next) => {
     const { projectId } = req.params;
 
-    if (!projectId) {
-      throw new ApiError(400, "project id is missing");
+    if (!mongoose.isObjectIdOrHexString(projectId)) {
+      throw new ApiError(400, "invalid project id");
     }
 
-    //project member document
-    const project = await ProjectMember.findOne({
-      project: new mongoose.Types.ObjectId(projectId),
-      user: new mongoose.Types.ObjectId(req.user._id),
+    const membership = await ProjectMember.findOne({
+      project: projectId,
+      user: req.user._id,
     });
 
-    if (!project) {
-      throw new ApiError(400, "project not found");
-    }
+    // 404 (not 403) so non-members can't discover which projects exist
+    if (!membership) throw new ApiError(404, "project not found");
 
-    const givenRole = project?.role;
-
-    //attach the "givenRole' to "req.user.role" so that subsequent functions know exactly what the user's permissions are.
-    req.user.role = givenRole;
-
-    if (!roles.includes(givenRole)) {
+    if (roles.length && !roles.includes(membership.role)) {
       throw new ApiError(
         403,
         "you do not have permission to perform this action",
       );
     }
+
+    req.projectRole = membership.role;
     next();
   });
-};

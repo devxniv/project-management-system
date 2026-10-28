@@ -18,8 +18,14 @@ connectDB().catch((err) => console.log("mongodb connection error", err));
 }; */
 
 const connectDB = async () => {
-  await mongoose.connect(process.env.MONGO_URI);
-  console.log("mongodb connected successfully");
+  if (!process.env.MONGO_URI) {
+    throw new Error("MONGO_URI is not defined in .env");
+  }
+
+  const conn = await mongoose.connect(process.env.MONGO_URI);
+  console.log(
+    `MongoDB connected: ${conn.connection.host}/${conn.connection.name}`,
+  );
 };
 
 export default connectDB;

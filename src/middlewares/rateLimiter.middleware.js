@@ -1,44 +1,71 @@
 import rateLimit from "express-rate-limit";
 import { ApiError } from "../utils/apiError.js";
 
-// Shared handler so every limiter returns your app's standard error shape
-// instead of express-rate-limit's plain text default.
+// Every limiter returns your app's standard error shape instead of plain text
 const rateLimitHandler = (req, res, next, options) => {
-  throw new ApiError(
-    429,
-    options.message || "Too many requests, please try again later.",
+  next(
+    new ApiError(
+      429,
+      typeof options.message === "string"
+        ? options.message
+        : "Too many requests, please try again later.",
+    ),
   );
 };
 
-// Strict — brute-force login protection
-const loginLimiter = rateLimit({
+const base = {
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts per IP per window
   standardHeaders: true, // adds RateLimit-* response headers
   legacyHeaders: false,
+  handler: rateLimitHandler,
+};
+
+// Whole API: a generous safety net
+const apiLimiter = rateLimit({
+  ...base,
+  limit: 300,
+  message: "Too many requests. Please slow down.",
+});
+
+// Brute-force protection: only failed logins count against the limit
+const loginLimiter = rateLimit({
+  ...base,
+  limit: 10,
+  skipSuccessfulRequests: true,
   message: "Too many login attempts. Please try again in 15 minutes.",
-  handler: rateLimitHandler,
 });
 
-// Password reset spam protection
+const registerLimiter = rateLimit({
+  ...base,
+  limit: 10,
+  message: "Too many sign-up attempts. Please try again later.",
+});
+
+// Password-reset / email spam protection
 const forgotPasswordLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 3,
-  standardHeaders: true,
-  legacyHeaders: false,
+  ...base,
+  limit: 5,
   message: "Too many password reset requests. Please try again later.",
-  handler: rateLimitHandler,
 });
 
-// Refresh token abuse protection — looser, since legitimate clients
-// call this routinely as access tokens expire
+const resendVerificationLimiter = rateLimit({
+  ...base,
+  limit: 5,
+  message: "Too many verification emails requested. Please try again later.",
+});
+
+// Looser, since clients refresh routinely as access tokens expire
 const refreshTokenLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
+  ...base,
+  limit: 30,
   message: "Too many token refresh attempts. Please try again later.",
-  handler: rateLimitHandler,
 });
 
-export { loginLimiter, forgotPasswordLimiter, refreshTokenLimiter };
+export {
+  apiLimiter,
+  loginLimiter,
+  registerLimiter,
+  forgotPasswordLimiter,
+  resendVerificationLimiter,
+  refreshTokenLimiter,
+};
