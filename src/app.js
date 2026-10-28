@@ -67,11 +67,12 @@ app.get("/", (req, res) => {
   <div class="meta">
     <span>Version: <strong>v1</strong></span>
     <span>Status: <strong>200 OK</strong></span>
-    <span>Routes: <strong>4</strong></span>
+    <span>Endpoints: <strong>29</strong></span>
+    <span>Modules: <strong>4</strong></span>
   </div>
 
   <div class="card">
-    <h2>Available routes</h2>
+    <h2>Available modules</h2>
     <div class="row"><span class="method" style="background:#d1fae5;color:#065f46">GET</span><span class="path">/api/v1/healthcheck</span><span class="label">Health check</span></div>
     <div class="row"><span class="method" style="background:#dbeafe;color:#1e40af">ALL</span><span class="path">/api/v1/auth</span><span class="label">Authentication</span></div>
     <div class="row"><span class="method" style="background:#ede9fe;color:#5b21b6">ALL</span><span class="path">/api/v1/projects</span><span class="label">Projects</span></div>
