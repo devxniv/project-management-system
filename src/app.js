@@ -11,7 +11,7 @@ import {
   errorHandler,
 } from "./middlewares/error.middleware.js";
 import { apiLimiter } from "./middlewares/rateLimiter.middleware.js";
-
+const app = express();
 // Needed on Render/Railway/Heroku so rate limiting and secure cookies work behind a proxy
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
@@ -22,8 +22,6 @@ const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
-
-const app = express();
 
 app.use(
   cors({
